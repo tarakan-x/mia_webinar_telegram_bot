@@ -3,6 +3,7 @@
 
 import json
 import logging
+import os
 from typing import Dict, Any, Optional
 
 import gspread
@@ -40,7 +41,42 @@ class SheetsClient:
         if not self.enabled:
             return False
         try:
-            creds = Credentials.from_service_account_file(self.creds_path, scopes=SCOPES)
+            # Try multiple methods to load credentials
+            creds = None
+            
+            # Method 1: Check for GOOGLE_SERVICE_ACCOUNT_JSON environment variable
+            json_env = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
+            if json_env:
+                logger.info("Loading Google credentials from GOOGLE_SERVICE_ACCOUNT_JSON environment variable")
+                try:
+                    creds_info = json.loads(json_env)
+                    creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
+                except Exception as e:
+                    logger.warning(f"Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON: {e}")
+            
+            # Method 2: Check Render secret files location
+            if not creds:
+                secret_path = '/etc/secrets/service_account.json'
+                if os.path.exists(secret_path):
+                    logger.info(f"Loading Google credentials from {secret_path}")
+                    creds = Credentials.from_service_account_file(secret_path, scopes=SCOPES)
+            
+            # Method 3: Check /data directory (persistent disk)
+            if not creds:
+                data_path = '/data/service_account.json'
+                if os.path.exists(data_path):
+                    logger.info(f"Loading Google credentials from {data_path}")
+                    creds = Credentials.from_service_account_file(data_path, scopes=SCOPES)
+            
+            # Method 4: Use provided path (local development)
+            if not creds and os.path.exists(self.creds_path):
+                logger.info(f"Loading Google credentials from {self.creds_path}")
+                creds = Credentials.from_service_account_file(self.creds_path, scopes=SCOPES)
+            
+            if not creds:
+                logger.error("Google service account credentials not found. Tried: env var, /etc/secrets/, /data/, and %s", self.creds_path)
+                return False
+            
             self.gc = gspread.authorize(creds)
             sheet_id = self._extract_id(self.spreadsheet_id)
             sh = self.gc.open_by_key(sheet_id)
