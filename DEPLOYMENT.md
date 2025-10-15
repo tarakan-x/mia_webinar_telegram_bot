@@ -113,7 +113,7 @@ Use bot commands to change settings. Changes persist!
 
 ### How to Reset to Defaults?
 1. Go to Render Shell
-2. Run: `rm config.json database.json`
+2. Run: `rm /data/config.json /data/database.json`
 3. Restart service
 4. Bot recreates from environment variables
 
