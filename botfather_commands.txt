@@ -1,0 +1,40 @@
+Configurare comenzi pentru BotFather:
+
+Pentru a seta comenzile în interfața Telegram, trebuie să urmezi acești pași:
+
+1. Deschide o conversație cu @BotFather în Telegram
+2. Trimite comanda `/setcommands`
+3. Selectează botul tău din listă
+4. Copiază și trimite lista de mai jos:
+
+help - Afișează ajutorul și toate comenzile
+adminmenu - Meniu pentru administratori
+addadmin - Adaugă un administrator (folosește /addadmin <id>)
+deladmin - Șterge un administrator (folosește /deladmin <id>)
+listadmins - Listează toți administratorii
+setreminder - Configurează programarea reminderului din ziua aleasă
+viewschedule - Afișează programarea curentă a webinarului și a reminderelor
+setwebinar - Configurează ziua/ora/timezone-ul/link-ul webinarului
+exportcsv - Exportă toți participanții în CSV
+setmessage - Setează textele pentru mesaje
+sendreminder - Trimite manual reminder (day|15min)
+broadcast - Trimite un mesaj tuturor participanților
+start - Înregistrare și mesaj de bun venit
+menu - Deschide meniul principal de comenzi
+info - Informații despre următorul webinar
+adminmenu - Meniu pentru administratori
+addadmin - Adaugă un administrator (folosește /addadmin <id>)
+deladmin - Șterge un administrator (folosește /deladmin <id>)
+listadmins - Listează toți administratorii
+```
+
+Acest lucru va adăuga butoane de comandă în interfața chat-ului, făcând comenzile accesibile oricând.
+
+De asemenea, pentru a adăuga un buton de meniu în interfața utilizatorului, poți folosi comanda `/setmenubutton` în BotFather:
+
+1. Trimite comanda `/setmenubutton`
+2. Selectează botul tău
+3. Trimite `/menu` ca URL
+4. Adaugă descrierea "Meniu Principal"
+
+Aceasta va adăuga un buton de meniu în interfața Telegram care va afișa meniul principal când este apăsat.

@@ -1,0 +1,29 @@
+{
+  "token": "YOUR_BOT_TOKEN",
+  "admin_ids": [
+    123456789
+  ],
+  "webinar": {
+    "day": "Tuesday",
+    "time": "15:00",
+    "timezone": "Europe/Bucharest"
+  },
+  "messages": {
+    "welcome": "...",
+    "info": "...",
+    "reminder_day": "...",
+    "reminder_15min": "..."
+  },
+  "reminders": {
+    "day": {
+      "day": "Tuesday",
+      "time": "09:00"
+    }
+  },
+  "google_sheets": {
+    "enabled": true,
+    "credentials_json_path": "service_account.json",
+    "spreadsheet_id": "<YOUR_SPREADSHEET_ID_OR_URL>",
+    "worksheet_name": "participants"
+  }
+}
