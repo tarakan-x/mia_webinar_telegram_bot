@@ -27,14 +27,49 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def load_config():
-    """Load configuration from config.json"""
-    try:
-        with open('config.json', 'r', encoding='utf-8') as file:
-            config = json.load(file)
-        return config
-    except Exception as e:
-        logger.error(f"Error loading config: {e}")
-        raise
+    """Load configuration from config.json or environment variables"""
+    # Try to load from config.json first
+    if os.path.exists('config.json'):
+        try:
+            with open('config.json', 'r', encoding='utf-8') as file:
+                config = json.load(file)
+            return config
+        except Exception as e:
+            logger.warning(f"Error loading config.json: {e}, falling back to environment variables")
+    
+    # Fallback to environment variables (for Render.com deployment)
+    logger.info("Using environment variables for configuration")
+    admin_ids_str = os.environ.get('ADMIN_IDS', '123456789')
+    admin_ids = [int(id.strip()) for id in admin_ids_str.split(',') if id.strip()]
+    
+    config = {
+        "token": os.environ.get('TELEGRAM_BOT_TOKEN', 'YOUR_BOT_TOKEN'),
+        "admin_ids": admin_ids,
+        "webinar": {
+            "day": os.environ.get('WEBINAR_DAY', 'Tuesday'),
+            "time": os.environ.get('WEBINAR_TIME', '15:00'),
+            "timezone": os.environ.get('WEBINAR_TIMEZONE', 'Europe/Bucharest')
+        },
+        "messages": {
+            "welcome": "Welcome to the webinar registration!",
+            "info": "Webinar information...",
+            "reminder_day": "Reminder: Webinar tomorrow!",
+            "reminder_15min": "Reminder: Webinar starts in 15 minutes!"
+        },
+        "reminders": {
+            "day": {
+                "day": os.environ.get('REMINDER_DAY_DAY', 'Tuesday'),
+                "time": os.environ.get('REMINDER_DAY_TIME', '09:00')
+            }
+        },
+        "google_sheets": {
+            "enabled": os.environ.get('GOOGLE_SHEETS_ENABLED', 'false').lower() == 'true',
+            "credentials_json_path": "service_account.json",
+            "spreadsheet_id": os.environ.get('GOOGLE_SHEETS_SPREADSHEET_ID', ''),
+            "worksheet_name": os.environ.get('GOOGLE_SHEETS_WORKSHEET_NAME', 'participants')
+        }
+    }
+    return config
 
 def main():
     """Main function to start the bot"""
