@@ -18,29 +18,37 @@ from keyboard_menu import handle_keyboard_button
 # Load environment variables from .env file
 load_dotenv()
 
+# Determine data directory (use /data for Render.com persistent disk, or current dir for local)
+DATA_DIR = '/data' if os.path.exists('/data') and os.access('/data', os.W_OK) else '.'
+CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
+DATABASE_FILE = os.path.join(DATA_DIR, 'database.json')
+LOG_FILE = os.path.join(DATA_DIR, 'bot.log')
+
 # Setup logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO,
-    filename='bot.log'
+    filename=LOG_FILE
 )
 logger = logging.getLogger(__name__)
+
+logger.info(f"Using data directory: {DATA_DIR}")
 
 def load_config():
     """Load configuration from config.json or environment variables"""
     # Try to load from config.json first (for persistent changes)
-    if os.path.exists('config.json'):
+    if os.path.exists(CONFIG_FILE):
         try:
-            with open('config.json', 'r', encoding='utf-8') as file:
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as file:
                 config = json.load(file)
-            logger.info("Loaded configuration from config.json")
+            logger.info(f"Loaded configuration from {CONFIG_FILE}")
             return config
         except Exception as e:
-            logger.warning(f"Error loading config.json: {e}, falling back to environment variables")
+            logger.warning(f"Error loading {CONFIG_FILE}: {e}, falling back to environment variables")
     
     # Fallback to environment variables (for initial Render.com deployment)
     # This will create config.json on first run
-    logger.info("config.json not found, creating from environment variables")
+    logger.info(f"{CONFIG_FILE} not found, creating from environment variables")
     admin_ids_str = os.environ.get('ADMIN_IDS', '123456789')
     admin_ids = [int(id.strip()) for id in admin_ids_str.split(',') if id.strip()]
     
@@ -74,20 +82,21 @@ def load_config():
     
     # Save this initial config to config.json for future edits
     try:
-        with open('config.json', 'w', encoding='utf-8') as file:
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as file:
             json.dump(config, file, indent=4, ensure_ascii=False)
-        logger.info("Created config.json from environment variables")
+        logger.info(f"Created {CONFIG_FILE} from environment variables")
     except Exception as e:
-        logger.warning(f"Could not create config.json: {e}")
+        logger.warning(f"Could not create {CONFIG_FILE}: {e}")
     
     return config
 
 def main():
     """Main function to start the bot"""
     # Initialize database.json if it doesn't exist
-    if not os.path.exists('database.json'):
-        with open('database.json', 'w', encoding='utf-8') as file:
+    if not os.path.exists(DATABASE_FILE):
+        with open(DATABASE_FILE, 'w', encoding='utf-8') as file:
             json.dump({"participants": {}, "settings": {"last_modified": None}}, file, indent=4)
+        logger.info(f"Created {DATABASE_FILE}")
     
     # Load configuration
     config = load_config()

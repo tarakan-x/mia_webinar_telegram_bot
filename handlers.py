@@ -5,6 +5,7 @@ import json
 import logging
 import csv
 import datetime
+import os
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes, MessageHandler, filters, CallbackQueryHandler
 from scheduler import send_reminder_to_all, refresh_scheduler, get_schedule_preview
@@ -19,44 +20,49 @@ except ImportError:
 # Setup logging
 logger = logging.getLogger(__name__)
 
+# Use same data directory as main.py
+DATA_DIR = '/data' if os.path.exists('/data') and os.access('/data', os.W_OK) else '.'
+CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
+DATABASE_FILE = os.path.join(DATA_DIR, 'database.json')
+
 def load_config():
     """Load configuration from config.json"""
     try:
-        with open('config.json', 'r', encoding='utf-8') as file:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as file:
             config = json.load(file)
         return config
     except Exception as e:
-        logger.error(f"Error loading config: {e}")
+        logger.error(f"Error loading config from {CONFIG_FILE}: {e}")
         return None
 
 def save_config(config):
     """Persist configuration to config.json"""
     try:
-        with open('config.json', 'w', encoding='utf-8') as file:
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as file:
             json.dump(config, file, indent=4, ensure_ascii=False)
         return True
     except Exception as e:
-        logger.error(f"Error saving config: {e}")
+        logger.error(f"Error saving config to {CONFIG_FILE}: {e}")
         return False
 
 def load_database():
     """Load database from database.json"""
     try:
-        with open('database.json', 'r', encoding='utf-8') as file:
+        with open(DATABASE_FILE, 'r', encoding='utf-8') as file:
             database = json.load(file)
         return database
     except Exception as e:
-        logger.error(f"Error loading database: {e}")
+        logger.error(f"Error loading database from {DATABASE_FILE}: {e}")
         return {"participants": {}, "settings": {"last_modified": None}}
 
 def save_database(database):
     """Save database to database.json"""
     try:
-        with open('database.json', 'w', encoding='utf-8') as file:
+        with open(DATABASE_FILE, 'w', encoding='utf-8') as file:
             json.dump(database, file, indent=4, ensure_ascii=False)
         return True
     except Exception as e:
-        logger.error(f"Error saving database: {e}")
+        logger.error(f"Error saving database to {DATABASE_FILE}: {e}")
         return False
 
 def is_admin(user_id):
