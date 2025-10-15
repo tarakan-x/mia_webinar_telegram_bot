@@ -36,6 +36,17 @@ logger.info(f"Using data directory: {DATA_DIR}")
 
 def load_config():
     """Load configuration from config.json or environment variables"""
+    secret_config_file = '/etc/secrets/config.json'
+    
+    # Check if config exists in /data, if not, try to import from secrets
+    if not os.path.exists(CONFIG_FILE) and os.path.exists(secret_config_file):
+        try:
+            import shutil
+            shutil.copy(secret_config_file, CONFIG_FILE)
+            logger.info(f"✅ Imported config from {secret_config_file} to {CONFIG_FILE}")
+        except Exception as e:
+            logger.error(f"Failed to import config from secrets: {e}")
+    
     # Try to load from config.json first (for persistent changes)
     if os.path.exists(CONFIG_FILE):
         try:
@@ -58,13 +69,14 @@ def load_config():
         "webinar": {
             "day": os.environ.get('WEBINAR_DAY', 'Tuesday'),
             "time": os.environ.get('WEBINAR_TIME', '15:00'),
-            "timezone": os.environ.get('WEBINAR_TIMEZONE', 'Europe/Bucharest')
+            "timezone": os.environ.get('WEBINAR_TIMEZONE', 'Europe/Bucharest'),
+            "link": os.environ.get('WEBINAR_LINK', 'https://meet.google.com/rws-ybdw-gfb')
         },
         "messages": {
-            "welcome": "Welcome to the webinar registration!",
-            "info": "Webinar information...",
-            "reminder_day": "Reminder: Webinar tomorrow!",
-            "reminder_15min": "Reminder: Webinar starts in 15 minutes!"
+            "welcome": "BINE AI VENIT! {first_name} {last_name} 👋\n\nTe-ai înregistrat cu succes la webinarul MIA pentru afaceri.\n📅 Când: Marți, ora 15:00\n🔗 Unde: https://meet.google.com/rws-ybdw-gfb\nLa acest webinar vei descoperi:\n✅ Cum să încasezi banii în câteva secunde, direct în cont\n✅ Care este cel mai mic comision de pe piață – max. 0,8%\n✅ Cum funcționează plățile prin cod QR – simplu și rapid\nℹ️ În ziua evenimentului vei primi un reminder cu toate detaliile.\nNe vedem curând! 🚀",
+            "info": "Bună 👋\n\nUrmătorul webinar va avea loc:\n\n📅 Când: Marți, ora 15:00\n🔗 Unde: https://meet.google.com/rws-ybdw-gfb\nLa acest webinar vei descoperi:\n✅ Cum să încasezi banii în câteva secunde, direct în cont\n✅ Care este cel mai mic comision de pe piață – max. 0,8%\n✅ Cum funcționează plățile prin cod QR – simplu și rapid\nℹ️ În ziua evenimentului vei primi un reminder cu toate detaliile.\nNe vedem curând! 🚀",
+            "reminder_day": "BUNĂ DIMINEAȚA!\nNu uita: azi, la ora 15:00, are loc webinarul gratuit MIA pentru afaceri, organizat de echipa FinTech a Băncii Naționale a Moldovei.\n👉 Conectează-te aici: https://meet.google.com/rws-ybdw-gfb\nCe vei învăța:\n⚡ Cum să încasezi banii în doar 10 secunde\n💡 Cum să reduci costurile la max. 0,8% comision\n📲 Cum să folosești plățile prin QR pentru afacerea ta\nTe așteptăm online! 🚀",
+            "reminder_15min": "⏰ 15 minute până la start\n• Webinar: MIA pentru afaceri\n• Conectare: https://meet.google.com/rws-ybdw-gfb\n• Ora: 15:00 (Chișinău)\nTe așteptăm! 🙌\n💼 Vezi cum încasezi rapid, reduci costurile și simplifici plățile pentru clienți.\n📞 Ai nevoie de suport? Sună-ne: +373 (22) 82 81 25\n🚀 MIA – pentru afaceri în mișcare.\nCreat de Banca Națională a Moldovei"
         },
         "reminders": {
             "day": {
