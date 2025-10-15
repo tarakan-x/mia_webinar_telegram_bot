@@ -4,6 +4,7 @@
 import logging
 import json
 import datetime
+import os
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from pytz import timezone
@@ -12,27 +13,32 @@ from utils import get_next_webinar_date
 # Setup logging
 logger = logging.getLogger(__name__)
 
+# Use same data directory as main.py and handlers.py
+DATA_DIR = '/data' if os.path.exists('/data') and os.access('/data', os.W_OK) else '.'
+CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
+DATABASE_FILE = os.path.join(DATA_DIR, 'database.json')
+
 # Global scheduler
 scheduler = None
 
 def load_config():
     """Load configuration from config.json"""
     try:
-        with open('config.json', 'r', encoding='utf-8') as file:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as file:
             config = json.load(file)
         return config
     except Exception as e:
-        logger.error(f"Error loading config: {e}")
+        logger.error(f"Error loading config from {CONFIG_FILE}: {e}")
         return None
 
 def load_database():
     """Load database from database.json"""
     try:
-        with open('database.json', 'r', encoding='utf-8') as file:
+        with open(DATABASE_FILE, 'r', encoding='utf-8') as file:
             database = json.load(file)
         return database
     except Exception as e:
-        logger.error(f"Error loading database: {e}")
+        logger.error(f"Error loading database from {DATABASE_FILE}: {e}")
         return {"participants": {}, "settings": {"last_modified": None}}
 
 async def send_reminder_to_all(bot, reminder_type):
