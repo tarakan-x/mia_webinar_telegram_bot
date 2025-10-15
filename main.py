@@ -104,6 +104,16 @@ def load_config():
 
 def main():
     """Main function to start the bot"""
+    # Check if database exists in secret files location and import it
+    secret_database_file = '/etc/secrets/database.json'
+    if not os.path.exists(DATABASE_FILE) and os.path.exists(secret_database_file):
+        try:
+            import shutil
+            shutil.copy(secret_database_file, DATABASE_FILE)
+            logger.info(f"✅ Imported database from {secret_database_file} to {DATABASE_FILE}")
+        except Exception as e:
+            logger.error(f"Failed to import database from secrets: {e}")
+    
     # Initialize database.json if it doesn't exist
     if not os.path.exists(DATABASE_FILE):
         with open(DATABASE_FILE, 'w', encoding='utf-8') as file:
