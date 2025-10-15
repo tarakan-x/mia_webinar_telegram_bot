@@ -8,4 +8,21 @@ services:
     envVars:
       - key: TELEGRAM_BOT_TOKEN
         sync: false
+      - key: ADMIN_IDS
+        sync: false
+      - key: WEBINAR_DAY
+        value: Tuesday
+      - key: WEBINAR_TIME
+        value: "15:00"
+      - key: WEBINAR_TIMEZONE
+        value: Europe/Bucharest
+      - key: REMINDER_DAY_DAY
+        value: Tuesday
+      - key: REMINDER_DAY_TIME
+        value: "09:00"
     autoDeploy: true
+    # Persistent disk for config.json and database.json
+    disk:
+      name: bot-data
+      mountPath: /opt/render/project/src
+      sizeGB: 1

@@ -28,17 +28,19 @@ logger = logging.getLogger(__name__)
 
 def load_config():
     """Load configuration from config.json or environment variables"""
-    # Try to load from config.json first
+    # Try to load from config.json first (for persistent changes)
     if os.path.exists('config.json'):
         try:
             with open('config.json', 'r', encoding='utf-8') as file:
                 config = json.load(file)
+            logger.info("Loaded configuration from config.json")
             return config
         except Exception as e:
             logger.warning(f"Error loading config.json: {e}, falling back to environment variables")
     
-    # Fallback to environment variables (for Render.com deployment)
-    logger.info("Using environment variables for configuration")
+    # Fallback to environment variables (for initial Render.com deployment)
+    # This will create config.json on first run
+    logger.info("config.json not found, creating from environment variables")
     admin_ids_str = os.environ.get('ADMIN_IDS', '123456789')
     admin_ids = [int(id.strip()) for id in admin_ids_str.split(',') if id.strip()]
     
@@ -69,6 +71,15 @@ def load_config():
             "worksheet_name": os.environ.get('GOOGLE_SHEETS_WORKSHEET_NAME', 'participants')
         }
     }
+    
+    # Save this initial config to config.json for future edits
+    try:
+        with open('config.json', 'w', encoding='utf-8') as file:
+            json.dump(config, file, indent=4, ensure_ascii=False)
+        logger.info("Created config.json from environment variables")
+    except Exception as e:
+        logger.warning(f"Could not create config.json: {e}")
+    
     return config
 
 def main():
