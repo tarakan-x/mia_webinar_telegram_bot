@@ -187,6 +187,17 @@ def refresh_scheduler(bot):
         if scheduler is None:
             setup_scheduler(bot)
             return
+        
+        # Load fresh config
+        config = load_config()
+        if not config:
+            logger.error("Failed to load configuration for refresh")
+            return
+        
+        # Get timezone
+        from pytz import timezone as pytz_timezone
+        tz = pytz_timezone(config['webinar'].get('timezone', 'Europe/Bucharest'))
+        
         # Remove existing jobs if present
         try:
             scheduler.remove_job('day_reminder')
@@ -196,8 +207,61 @@ def refresh_scheduler(bot):
             scheduler.remove_job('15min_reminder')
         except Exception:
             pass
-        # Re-add with current config
-        setup_scheduler(bot)
+        
+        # Get day of week and time for webinar
+        day_of_week = config['webinar'].get('day', 'Tuesday')
+        time = config['webinar'].get('time', '15:00')
+        hour, minute = map(int, time.split(':'))
+        
+        # Map day of week to integer
+        days = {
+            'Monday': 0, 'Tuesday': 1, 'Wednesday': 2,
+            'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6
+        }
+        day_num = days.get(day_of_week, 2)
+        
+        # Read custom reminders configuration for 'day' only
+        reminders_cfg = config.get('reminders', {})
+        day_reminder_cfg = reminders_cfg.get('day', {})
+        day_reminder_day = day_reminder_cfg.get('day')
+        day_reminder_time = day_reminder_cfg.get('time')
+        
+        if day_reminder_day and day_reminder_time:
+            dr_hour, dr_minute = map(int, day_reminder_time.split(':'))
+            day_num_for_day_rem = days.get(day_reminder_day, day_num)
+            cron_day = CronTrigger(day_of_week=day_num_for_day_rem, hour=dr_hour, minute=dr_minute, timezone=tz)
+        else:
+            # Default: webinar day at 09:00
+            cron_day = CronTrigger(day_of_week=day_num, hour=9, minute=0, timezone=tz)
+        
+        scheduler.add_job(
+            send_reminder_to_all,
+            cron_day,
+            id='day_reminder',
+            replace_existing=True,
+            args=[bot, 'day']
+        )
+        
+        # 15-minute reminder: always 15 minutes before webinar
+        rel_hour = hour
+        rel_minute = minute - 15
+        rel_day_num = day_num
+        if rel_minute < 0:
+            rel_minute += 60
+            rel_hour -= 1
+            if rel_hour < 0:
+                rel_hour = 23
+                rel_day_num = (day_num - 1) % 7
+        cron_15 = CronTrigger(day_of_week=rel_day_num, hour=rel_hour, minute=rel_minute, timezone=tz)
+        
+        scheduler.add_job(
+            send_reminder_to_all,
+            cron_15,
+            id='15min_reminder',
+            replace_existing=True,
+            args=[bot, '15min']
+        )
+        
         logger.info("Scheduler refreshed with new configuration")
     except Exception as e:
         logger.error(f"Error refreshing scheduler: {e}")
