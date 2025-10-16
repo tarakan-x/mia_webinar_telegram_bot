@@ -14,7 +14,12 @@ from utils import get_next_webinar_date
 logger = logging.getLogger(__name__)
 
 # Use same data directory as main.py and handlers.py
-DATA_DIR = '/data' if os.path.exists('/data') and os.access('/data', os.W_OK) else '.'
+# Force /data on production (Render always has /data), use current dir only for local dev
+if os.path.exists('/data'):
+    DATA_DIR = '/data'
+else:
+    DATA_DIR = '.'
+    
 CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
 DATABASE_FILE = os.path.join(DATA_DIR, 'database.json')
 

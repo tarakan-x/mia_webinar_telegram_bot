@@ -21,14 +21,20 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Use same data directory as main.py
-DATA_DIR = '/data' if os.path.exists('/data') and os.access('/data', os.W_OK) else '.'
+# Force /data on production (Render always has /data), use current dir only for local dev
+import sys
+if os.path.exists('/data'):
+    DATA_DIR = '/data'
+else:
+    DATA_DIR = '.'
+
 CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
 DATABASE_FILE = os.path.join(DATA_DIR, 'database.json')
 
 # Debug logging
 logger.info(f"[HANDLERS] Using DATA_DIR: {DATA_DIR}")
 logger.info(f"[HANDLERS] CONFIG_FILE: {CONFIG_FILE}")
-logger.info(f"/data exists: {os.path.exists('/data')}, writable: {os.access('/data', os.W_OK)}")
+logger.info(f"[HANDLERS] /data exists: {os.path.exists('/data')}")
 
 def load_config():
     """Load configuration from config.json"""

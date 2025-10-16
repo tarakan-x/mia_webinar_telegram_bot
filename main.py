@@ -19,7 +19,12 @@ from keyboard_menu import handle_keyboard_button
 load_dotenv()
 
 # Determine data directory (use /data for Render.com persistent disk, or current dir for local)
-DATA_DIR = '/data' if os.path.exists('/data') and os.access('/data', os.W_OK) else '.'
+# Force /data on production (Render always has /data), use current dir only for local dev
+if os.path.exists('/data'):
+    DATA_DIR = '/data'
+else:
+    DATA_DIR = '.'
+    
 CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
 DATABASE_FILE = os.path.join(DATA_DIR, 'database.json')
 LOG_FILE = os.path.join(DATA_DIR, 'bot.log')
