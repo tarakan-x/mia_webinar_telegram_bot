@@ -188,6 +188,11 @@ def refresh_scheduler(bot):
             setup_scheduler(bot)
             return
         
+        # Check if scheduler is actually running
+        if not scheduler.running:
+            logger.warning("Scheduler was not running, starting it now")
+            scheduler.start()
+        
         # Load fresh config
         config = load_config()
         if not config:
@@ -241,6 +246,7 @@ def refresh_scheduler(bot):
             replace_existing=True,
             args=[bot, 'day']
         )
+        logger.info(f"Added day_reminder job for {day_reminder_day or day_of_week} at {day_reminder_time or '09:00'}")
         
         # 15-minute reminder: always 15 minutes before webinar
         rel_hour = hour
@@ -261,6 +267,7 @@ def refresh_scheduler(bot):
             replace_existing=True,
             args=[bot, '15min']
         )
+        logger.info(f"Added 15min_reminder job for {list(days.keys())[rel_day_num]} at {rel_hour:02d}:{rel_minute:02d}")
         
         logger.info("Scheduler refreshed with new configuration")
     except Exception as e:
