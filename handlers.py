@@ -25,6 +25,11 @@ DATA_DIR = '/data' if os.path.exists('/data') and os.access('/data', os.W_OK) el
 CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
 DATABASE_FILE = os.path.join(DATA_DIR, 'database.json')
 
+# Debug logging
+logger.info(f"[HANDLERS] Using DATA_DIR: {DATA_DIR}")
+logger.info(f"[HANDLERS] CONFIG_FILE: {CONFIG_FILE}")
+logger.info(f"/data exists: {os.path.exists('/data')}, writable: {os.access('/data', os.W_OK)}")
+
 def load_config():
     """Load configuration from config.json"""
     try:
@@ -38,8 +43,11 @@ def load_config():
 def save_config(config):
     """Persist configuration to config.json"""
     try:
+        logger.info(f"[SAVE_CONFIG] Attempting to save to: {CONFIG_FILE}")
+        logger.info(f"[SAVE_CONFIG] Current working directory: {os.getcwd()}")
         with open(CONFIG_FILE, 'w', encoding='utf-8') as file:
             json.dump(config, file, indent=4, ensure_ascii=False)
+        logger.info(f"[SAVE_CONFIG] Successfully saved to: {CONFIG_FILE}")
         return True
     except Exception as e:
         logger.error(f"Error saving config to {CONFIG_FILE}: {e}")
