@@ -1021,16 +1021,21 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Update message
             config['messages'][message_type] = message_text
             
-            # Save config
-            with open('config.json', 'w', encoding='utf-8') as file:
-                json.dump(config, file, indent=4, ensure_ascii=False)
+            # Save config using save_config() to use DATA_DIR
+            if not save_config(config):
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text="❌ Eroare la salvarea configurației."
+                )
+                del context.user_data['pending_message_type']
+                return
             
             # Clear pending state
             del context.user_data['pending_message_type']
             
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text=f"Mesajul de tip '{message_type}' a fost actualizat cu succes."
+                text=f"✅ Mesajul de tip '{message_type}' a fost actualizat cu succes."
             )
             
     except Exception as e:
